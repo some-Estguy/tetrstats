@@ -10,6 +10,13 @@ GREEN = "\033[92m"
 YELLOW = "\033[93m"
 RESET = "\033[0m"
 
+from stats import (
+    get_40l_time,
+    get_mode_stat,
+    rounded,
+    win_rate,
+    get_playtime,
+)
 
 # ---------- Helpers ----------
 
@@ -28,40 +35,6 @@ def show(label, value):
     if value is None or value == "":
         value = "None"
     print(f"{label:<19} {value}")
-
-def get_40l_time(summary):
-    if not isinstance(summary, dict):
-        return None
-    record = summary.get("record")
-    if not isinstance(record, dict):
-        return None
-
-    results = record.get("results")
-    if not isinstance(results, dict):
-        return None
-
-    stats = results.get("stats")
-    if not isinstance(stats, dict):
-        return None
-
-    time = stats.get("finaltime")
-    if isinstance(time, (int, float)):
-        return time / 1000
-
-    return None
-
-
-def get_mode_stat(summary, section, key):
-    if not isinstance(summary, dict):
-        return None
-
-    record = summary.get("record") or {}
-    results = record.get("results") or {}
-    data = results.get(section) or {}
-
-    return data.get(key)
-
-
 
 def print_comparison_row(label, value1, value2, lower_is_better=False,
                          decimals=2, suffix=""):
@@ -184,19 +157,6 @@ def format_stat(key, value):
             return str(round(value))
 
     return str(value)
-
-def rounded(value):
-    """Round a number safely."""
-    if isinstance(value, (int, float)):
-        return round(value)
-    return value if value is not None else "None"
-
-
-def win_rate(wins, games):
-    """Calculate win percentage safely."""
-    if isinstance(wins, (int, float)) and isinstance(games, (int, float)) and games > 0:
-        return f"{wins / games * 100:.2f}%"
-    return "None"
 
 def get_mode_summary(username, mode):
     url = f"https://ch.tetr.io/api/users/{username}/summaries/{mode}"
@@ -387,9 +347,7 @@ except (ValueError, KeyError) as e:
 # ---------- Calculated values ----------
 
 gametime = user.get("gametime") or 0
-hours = int(gametime // 3600)
-minutes = int((gametime % 3600) // 60)
-seconds = int(gametime % 60)
+hours, minutes, seconds = get_playtime(gametime)
 
 games_played = user.get("gamesplayed")
 games_won = user.get("gameswon")
