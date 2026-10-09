@@ -1,23 +1,38 @@
 # TetrStats
 
-A lightweight command-line tool for viewing detailed [TETR.IO](https://tetr.io) player statistics.
+A lightweight command-line tool for viewing and comparing detailed [TETR.IO](https://tetr.io) player statistics.
 
 ## Features
 
-* Player profile information
-* Overall activity statistics
-* Tetra League statistics
-* Win rates
-* Playtime
-* Current and best rank
-* APM, PPS and VS
-* Glicko and rating deviation
-* Past Tetra League seasons
-* Account information
-* Connections
-* Badges
-* Previous usernames
-* Avatar and banner revisions
+* **Player profiles**
+
+  * Username, role, and country
+* **Overall activity statistics**
+
+  * Games played and won
+  * Win rate and playtime
+* **Tetra League statistics**
+
+  * Current and best rank
+  * TR, standing, and percentile
+  * APM, PPS, and VS
+  * Glicko rating and rating deviation
+* **Additional Tetra League statistics**
+
+  * Detailed player statistics and performance metrics
+* **Player comparison**
+
+  * Compare two TETR.IO players side by side
+  * Compare profile, activity, Tetra League, account, and additional statistics
+  * Display numerical differences between players
+  * Color-coded results to highlight better, worse, and equal values
+* **Personal bests**
+
+  * 40 Lines records
+  * Blitz records
+* **Account information**
+
+  * Additional account statistics
 
 ## Requirements
 
@@ -32,7 +47,7 @@ pip install requests
 
 ## Usage
 
-Run TetrStats with a TETR.IO username:
+### View a player's statistics
 
 ```bash
 python3 main.py <username>
@@ -44,37 +59,42 @@ Example:
 python3 main.py estonian-guy
 ```
 
+### Compare two players
+
+Use the `--compare` option followed by the second player's username:
+
+```bash
+python3 main.py <username> --compare <other_username>
+```
+
+Example:
+
+```bash
+python3 main.py estonian-guy --compare lowlight
+```
+
+The comparison displays both players' statistics side by side, with a difference column for numerical values. Color-coded output helps distinguish better, worse, and equal results where applicable.
+
 ## Example Output
 
+The following is a simplified illustration of the comparison output:
+
 ```text
-╔══════════════════════════════╗
-║          TETR.IO STATS       ║
-╚══════════════════════════════╝
+PROFILE
+Stat                      Player 1      Player 2    Difference
+----------------------------------------------------------------
+Username              estonian-guy      lowlight            N/A
+Role                          user          user            N/A
+Country                         EE            XX            N/A
 
---- Profile ---
-Player ID:          ...
-Username:           estonian-guy
-Role:               user
-Country:            EE
-Created:            ...
-
---- Tetra League ---
-TR:                 ...
-Rank:               SS
-Best Rank:          SS
-Standing:           ...
-Percentile:         ...
-APM:                ...
-PPS:                ...
-VS:                 ...
-
---- Past Seasons ---
-
-Season ...
-Placement:          ...
-TR:                 ...
-Rank:               ...
+OVERALL ACTIVITY
+Stat                      Player 1      Player 2    Difference
+----------------------------------------------------------------
+Games Played                 10000          8000      +2,000.00
+Games Won                     6000          4000      +2,000.00
 ```
+
+*Example values are illustrative and do not represent live player statistics.*
 
 ## Project Structure
 
@@ -86,14 +106,16 @@ tetrstats/
 └── README.md
 ```
 
-`main.py` handles the command-line interface, formatting and statistics display.
-
-`tetrio_api.py` handles requests to the TETR.IO API.
+* `main.py` handles command-line arguments, statistics display, formatting, and player comparisons.
+* `tetrio_api.py` handles requests to the TETR.IO API.
+* `.gitignore` excludes files that should not be tracked by Git.
 
 ## Disclaimer
 
-TetrStats is an independent project and is not affiliated with or endorsed by TETR.IO.
+TetrStats is an independent project and is not affiliated with, endorsed by, or officially associated with TETR.IO.
+
+Statistics are retrieved from the TETR.IO API and may change as the API or game changes.
 
 ## License
 
-This project is currently unlicensed.
+This project is distributed under the terms of the license specified in the [`LICENSE`](LICENSE) file. See that file for the full license text.
