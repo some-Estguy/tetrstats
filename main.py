@@ -1,10 +1,11 @@
-from tetrio_api import get_user, get_league
+from tetrio_api import get_user, get_league, get_zenith, get_zenithex
 import sys
 import requests
 from comparisons import run_comparison, get_mode_summary
 import argparse
 import json
 from datetime import datetime, timezone
+from summary import print_summary
 
 RED = "\033[91m"
 GREEN = "\033[92m"
@@ -109,6 +110,12 @@ def parse_args():
         help="Compare your target with another player"
     )
 
+    parser.add_argument(
+    "--summary",
+    action="store_true",
+    help="Show a short summary of player statistics",
+    )
+
     args = parser.parse_args()
 
     if args.username is not None:
@@ -132,6 +139,9 @@ try:
         sys.exit(1)
 
     league = get_league(username)
+
+    zenith = get_zenith(username)
+    zenithex = get_zenithex(username)
 
     compare_user = None
     compare_league = None
@@ -224,6 +234,30 @@ if args.json:
         "league": league,
     }
     print(json.dumps(output, indent=4, ensure_ascii=False))
+    sys.exit(0)
+
+# ---------- Summary ----------
+if args.summary:
+    try:
+        sprint = get_mode_summary(username, "40l")
+        blitz = get_mode_summary(username, "blitz")
+
+        print_summary(
+            username,
+            user,
+            league,
+            zenith,
+            zenithex,
+            sprint,
+            blitz,
+        )
+    except requests.exceptions.RequestException as e:
+        print(f"Network error while fetching mode stats: {e}")
+        sys.exit(1)
+    except (ValueError, KeyError) as e:
+        print(f"Error while generating summary: {e}")
+        sys.exit(1)
+
     sys.exit(0)
 
 

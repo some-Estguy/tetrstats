@@ -1,4 +1,3 @@
-
 import requests
 
 BASE_URL = "https://ch.tetr.io/api"
@@ -7,7 +6,6 @@ TIMEOUT = 10
 
 
 def api_get(endpoint):
-    """Fetch data from the TETR.IO API."""
     url = f"{BASE_URL}/{endpoint.lstrip('/')}"
 
     response = requests.get(
@@ -34,7 +32,6 @@ def api_get(endpoint):
 
 
 def get_user(username):
-    """Return a user's profile, or None if not found."""
     user = api_get(f"users/{username}")
 
     if user is None:
@@ -44,10 +41,25 @@ def get_user(username):
 
 
 def get_league(username):
-    """Return a user's league stats, or None if not found."""
     league = api_get(f"users/{username}/summaries/league")
 
     if league is None:
         print(f"Player '{username}' was not found.")
 
     return league
+
+def get_zenith(username):
+    zenith = api_get(f"users/{username}/summaries/zenith")
+
+    if zenith is None:
+        print(f"Player '{username}' was not found.")
+
+    return zenith
+
+def get_zenithex(username):
+    zenithex = api_get(f"users/{username}/summaries/zenithex")
+
+    if zenithex is None:
+        print(f"Player '{username}' was not found.")
+
+    return zenithex
