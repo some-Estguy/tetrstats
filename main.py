@@ -402,6 +402,187 @@ if should_show("past", args) or should_show("season", args):
         print("No past season data available.")
 
 
+
+# ---------- Quick Play ----------
+
+def get_qp_best_record(summary):
+    """Get the best available Quick Play record."""
+    if not isinstance(summary, dict):
+        return None
+
+    best = summary.get("best")
+    if isinstance(best, dict):
+        record = best.get("record")
+        if isinstance(record, dict):
+            return record
+
+    record = summary.get("record")
+    return record if isinstance(record, dict) else None
+
+
+def qp_number(value, decimals=0):
+    """Format a numeric Quick Play stat."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return f"{value:,.{decimals}f}"
+    return None
+
+
+def qp_rank(value):
+    """Format a leaderboard position."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return f"#{int(value):,}"
+    return None
+
+
+
+
+def get_qp_rank(summary, field, best=False):
+    if not isinstance(summary, dict):
+        return None
+
+    if best:
+        source = summary.get("best")
+    else:
+        source = summary
+
+    if not isinstance(source, dict):
+        return None
+
+    value = source.get(field)
+
+    if (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and value > 0
+    ):
+        return value
+
+    return None
+
+
+def print_qp_mode(title, summary, mode):
+    record = get_qp_best_record(summary)
+    print(json.dumps(summary, indent=2))
+
+    if record is None:
+        print(f"\n--- {title} ---")
+        print("No record available.")
+        return
+
+    results = record.get("results")
+    if not isinstance(results, dict):
+        print(f"\n--- {title} ---")
+        print("No record statistics available.")
+        return
+
+    stats = results.get("stats")
+    if not isinstance(stats, dict):
+        stats = {}
+
+    aggregate = results.get("aggregatestats")
+    if not isinstance(aggregate, dict):
+        aggregate = {}
+
+    mode_stats = stats.get(mode)
+
+    # TETR.IO may use "zenith" for Expert Zenith stats too.
+    if not isinstance(mode_stats, dict):
+        mode_stats = stats.get("zenith")
+
+    if not isinstance(mode_stats, dict):
+        mode_stats = {}
+
+    clears = stats.get("clears")
+    if not isinstance(clears, dict):
+        clears = {}
+
+    finesse = stats.get("finesse")
+    if not isinstance(finesse, dict):
+        finesse = {}
+
+    garbage = stats.get("garbage")
+    if not isinstance(garbage, dict):
+        garbage = {}
+
+    # Leaderboard positions are stored outside the record.
+    best_data = summary.get("best")
+
+    if (
+        isinstance(best_data, dict)
+        and best_data.get("record") is record
+    ):
+        position = best_data.get("p")
+    else:
+        position = summary.get("p")
+
+    if not isinstance(position, dict):
+        position = record.get("p")
+
+    if not isinstance(position, dict):
+        position = {}
+    # TETR.IO stores finaltime in milliseconds.
+    finaltime = mode_stats.get("finaltime")
+
+    if not isinstance(finaltime, (int, float)):
+        finaltime = stats.get("finaltime")
+    time_text = None
+
+    if (
+        isinstance(finaltime, (int, float))
+        and not isinstance(finaltime, bool)
+        and finaltime >= 0
+    ):
+        total_seconds = finaltime / 1000
+        minutes = int(total_seconds // 60)
+        seconds = total_seconds % 60
+        time_text = f"{minutes}m {seconds:05.2f}s"
+
+    print(f"\n--- {title} ---")
+
+    rows = [
+        ("Altitude:", qp_number(mode_stats.get("altitude"), 2)),
+        ("Floor:", qp_number(mode_stats.get("floor"))),
+        ("Time:", time_text),
+        ("Current Global Rank:", qp_rank(get_qp_rank(summary, "rank"))),
+        ("Current Country Rank:", qp_rank(get_qp_rank(summary, "rank_local"))),
+        ("Best Global Rank:", qp_rank(get_qp_rank(summary, "rank", best=True))),
+        ("Best Country Rank:", qp_rank(get_qp_rank(summary, "rank_local", best=True))),
+        ("Score:", qp_number(stats.get("score"))),
+        ("Lines:", qp_number(stats.get("lines"))),
+        ("APM:", qp_number(aggregate.get("apm"), 2)),
+        ("PPS:", qp_number(aggregate.get("pps"), 2)),
+        ("VS:", qp_number(aggregate.get("vsscore"), 2)),
+        ("Pieces Placed:", qp_number(stats.get("piecesplaced"))),
+        ("Inputs:", qp_number(stats.get("inputs"))),
+        ("Holds:", qp_number(stats.get("holds"))),
+        ("T-Spins:", qp_number(stats.get("tspins"))),
+        ("Top Combo:", qp_number(stats.get("topcombo"))),
+        ("B2B:", qp_number(stats.get("btb"))),
+        ("Top B2B:", qp_number(stats.get("topbtb"))),
+        ("Finesse Faults:", qp_number(finesse.get("faults"))),
+        ("Perfect Pieces:", qp_number(finesse.get("perfectpieces"))),
+        ("Garbage Sent:", qp_number(garbage.get("sent"))),
+        ("Max Spike:", qp_number(garbage.get("maxspike"))),
+        ("Singles:", qp_number(clears.get("singles"))),
+        ("Doubles:", qp_number(clears.get("doubles"))),
+        ("Triples:", qp_number(clears.get("triples"))),
+        ("Quads:", qp_number(clears.get("quads"))),
+        ("All Clears:", qp_number(clears.get("allclear"))),
+    ]
+
+    for label, value in rows:
+        show(label, value)
+
+
+if should_show("quickplay", args):
+    print_qp_mode("QUICK PLAY — ZENITH", zenith, "zenith")
+    print_qp_mode("EXPERT QUICK PLAY — ZENITH", zenithex, "zenithex")
+
+
+
+
+
+
 # ---------- Account ----------
 if should_show("account", args):
 

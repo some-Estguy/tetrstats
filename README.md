@@ -4,45 +4,53 @@ A lightweight command-line tool for viewing and comparing detailed [TETR.IO](htt
 
 ## Features
 
-* **Player profiles**
+- **Player profiles**
+  - Username, role, and country
+  - Account information and cosmetics
 
-  * Username, role, and country
-* **Overall activity statistics**
+- **Overall activity statistics**
+  - Games played, won, and lost
+  - Win rate and playtime
+  - Friend count and XP
 
-  * Games played and won
-  * Win rate and playtime
-* **Tetra League statistics**
+- **Tetra League statistics**
+  - Current and best rank
+  - TR, standing, and percentile
+  - APM, PPS, and VS
+  - Glicko rating and rating deviation
+  - Additional performance metrics
+  - Past-season statistics when available
 
-  * Current and best rank
-  * TR, standing, and percentile
-  * APM, PPS, and VS
-  * Glicko rating and rating deviation
-* **Additional Tetra League statistics**
+- **Quick Play statistics**
+  - Zenith and Expert Zenith
+  - Altitude and floor reached
+  - Run time and score
+  - Current and best global leaderboard ranks
+  - Country leaderboard ranks when available
+  - APM, PPS, and VS
+  - Lines, pieces placed, inputs, holds, and T-Spins
+  - Combo, back-to-back, and finesse statistics
+  - Garbage statistics and line-clear breakdowns
 
-  * Detailed player statistics and performance metrics
-* **Player comparison**
+- **Personal bests**
+  - 40 Lines records
+  - Blitz records
 
-  * Compare two TETR.IO players side by side
-  * Compare profile, activity, Tetra League, account, and additional statistics
-  * Display numerical differences between players
-  * Color-coded results to highlight better, worse, and equal values
-* **Personal bests**
-
-  * 40 Lines records
-  * Blitz records
-* **Account information**
-
-  * Additional account statistics
+- **Player comparison**
+  - Compare two TETR.IO players side by side
+  - Compare profile, activity, Tetra League, account, and additional statistics
+  - Display numerical differences between players
+  - Color-coded results to highlight better, worse, and equal values where applicable
 
 ## Requirements
 
-* Python 3
-* `requests`
+- Python 3
+- `requests`
 
 Install the dependency with:
 
 ```bash
-pip install requests
+python3 -m pip install requests
 ```
 
 ## Usage
@@ -85,7 +93,7 @@ Stat                      Player 1      Player 2    Difference
 ----------------------------------------------------------------
 Username              estonian-guy      lowlight            N/A
 Role                          user          user            N/A
-Country                         EE            XX            N/A
+Country                         EE            EE            N/A
 
 OVERALL ACTIVITY
 Stat                      Player 1      Player 2    Difference
@@ -102,19 +110,26 @@ Games Won                     6000          4000      +2,000.00
 tetrstats/
 ├── main.py
 ├── tetrio_api.py
-├── .gitignore
-└── README.md
+├── stats.py
+├── comparisons.py
+├── summary.py
+├── README.md
+├── LICENSE
+└── .gitignore
 ```
 
-* `main.py` handles command-line arguments, statistics display, formatting, and player comparisons.
-* `tetrio_api.py` handles requests to the TETR.IO API.
-* `.gitignore` excludes files that should not be tracked by Git.
+- `main.py` handles command-line arguments, statistics display, formatting, and program flow.
+- `tetrio_api.py` handles requests to the TETR.IO API.
+- `stats.py` contains statistics-related helpers.
+- `comparisons.py` handles player comparison logic.
+- `summary.py` contains summary-related functionality.
+- `.gitignore` excludes files that should not be tracked by Git.
 
 ## Disclaimer
 
 TetrStats is an independent project and is not affiliated with, endorsed by, or officially associated with TETR.IO.
 
-Statistics are retrieved from the TETR.IO API and may change as the API or game changes.
+Statistics are retrieved from the TETR.IO API and may change as the API or game changes. Some statistics or leaderboard positions may be unavailable.
 
 ## License
 
