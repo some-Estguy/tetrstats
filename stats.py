@@ -23,7 +23,6 @@ def get_40l_time(summary):
 
 
 def get_mode_stat(summary, section, key):
-    """Safely extract a stat from a mode summary."""
     if not isinstance(summary, dict):
         return None
 
@@ -43,30 +42,32 @@ def get_mode_stat(summary, section, key):
 
 
 def rounded(value):
-    """Round a numeric value while preserving missing values."""
+    if value is None or value == -1:
+        return "N/A"
+
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return round(value)
 
-    return value if value is not None else "None"
+    return value
 
 
 def win_rate(wins, games):
-    """Calculate win percentage, handling missing or invalid values."""
     valid_numbers = (
         isinstance(wins, (int, float))
         and not isinstance(wins, bool)
         and isinstance(games, (int, float))
         and not isinstance(games, bool)
+        and wins != -1
+        and games != -1
     )
 
     if valid_numbers and games > 0:
-        return f"{wins / games * 100:.2f}%"
+        return wins / games * 100
 
-    return "None"
+    return None
 
 
 def get_playtime(gametime):
-    """Convert total playtime in seconds into hours, minutes and seconds."""
     if not isinstance(gametime, (int, float)) or isinstance(gametime, bool):
         return 0, 0, 0
 

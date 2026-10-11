@@ -7,23 +7,59 @@ GREEN = "\033[92m"
 YELLOW = "\033[93m"
 RESET = "\033[0m"
 
+RANK_ORDER = {
+    "d": 0,
+    "d+": 1,
+    "c-": 2,
+    "c": 3,
+    "c+": 4,
+    "b-": 5,
+    "b": 6,
+    "b+": 7,
+    "a-": 8,
+    "a": 9,
+    "a+": 10,
+    "s-": 11,
+    "s": 12,
+    "s+": 13,
+    "ss": 14,
+    "u": 15,
+    "x": 16,
+    "x+": 17,
+}
+
+
+def is_missing(value):
+    """Check whether a stat is unavailable."""
+    return (
+        value is None
+        or (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value == -1
+        )
+    )
+
+
 def print_comparison_row(label, value1, value2, lower_is_better=False,
                          decimals=2, suffix=""):
     label_width = 22
     value_width = 14
     diff_width = 14
 
-    if value1 is None:
-        text1 = "N/A"
-    else:
-        text1 = f"{value1:,.{decimals}f}{suffix}"
+    missing1 = is_missing(value1)
+    missing2 = is_missing(value2)
 
-    if value2 is None:
-        text2 = "N/A"
-    else:
-        text2 = f"{value2:,.{decimals}f}{suffix}"
+    text1 = (
+        "N/A" if missing1
+        else f"{value1:,.{decimals}f}{suffix}"
+    )
+    text2 = (
+        "N/A" if missing2
+        else f"{value2:,.{decimals}f}{suffix}"
+    )
 
-    if value1 is None or value2 is None:
+    if missing1 or missing2:
         diff_text = "N/A"
     else:
         difference = value1 - value2
@@ -37,12 +73,17 @@ def print_comparison_row(label, value1, value2, lower_is_better=False,
                 value1 < value2 if lower_is_better else value1 > value2
             )
 
+            color1 = GREEN if first_better else RED
+            color2 = RED if first_better else GREEN
+
+            text1 = f"{color1}{text1:>{value_width}}{RESET}"
+            text2 = f"{color2}{text2:>{value_width}}{RESET}"
+
+            global points1, points2
             if first_better:
-                text1 = f"{GREEN}{text1:>{value_width}}{RESET}"
-                text2 = f"{RED}{text2:>{value_width}}{RESET}"
+                points1 += 1
             else:
-                text1 = f"{RED}{text1:>{value_width}}{RESET}"
-                text2 = f"{GREEN}{text2:>{value_width}}{RESET}"
+                points2 += 1
 
     if not text1.startswith((GREEN, RED, YELLOW)):
         text1 = f"{text1:>{value_width}}"
@@ -57,12 +98,50 @@ def print_comparison_row(label, value1, value2, lower_is_better=False,
         f"{diff_text:>{diff_width}}"
     )
 
+def print_rank_comparison_row(label, value1, value2):
+    global points1, points2
+
+    def get_rank_value(value):
+        if not isinstance(value, str):
+            return None
+
+        rank = value.strip().lower()
+        return RANK_ORDER.get(rank)
+
+    rank1 = get_rank_value(value1)
+    rank2 = get_rank_value(value2)
+
+    text1 = "N/A" if rank1 is None else str(value1)
+    text2 = "N/A" if rank2 is None else str(value2)
+    diff_text = "N/A"
+
+    if rank1 is not None and rank2 is not None:
+        if rank1 == rank2:
+            color1 = color2 = YELLOW
+            diff_text = "Tie"
+        elif rank1 > rank2:
+            color1, color2 = GREEN, RED
+            diff_text = "Higher"
+            points1 += 1
+        else:
+            color1, color2 = RED, GREEN
+            diff_text = "Lower"
+            points2 += 1
+
+        text1 = f"{color1}{text1:>14}{RESET}"
+        text2 = f"{color2}{text2:>14}{RESET}"
+    else:
+        text1 = f"{text1:>14}"
+        text2 = f"{text2:>14}"
+
+    print(f"{label:<22}{text1}{text2}{diff_text:>14}")
+
 def print_comparison_text_row(
     label, value1, value2, lower_is_better=False
 ):
     """Print two values and their difference when numeric."""
     def format_value(value):
-        if value is None or value == "":
+        if is_missing(value) or value == "":
             return "N/A"
         if isinstance(value, float):
             return f"{value:.2f}"
@@ -83,6 +162,9 @@ def print_comparison_text_row(
         and not isinstance(value2, bool)
     )
 
+    numeric1 = numeric1 and not is_missing(value1)
+    numeric2 = numeric2 and not is_missing(value2)
+
     if numeric1 and numeric2:
         difference = value1 - value2
         diff_text = f"{difference:+,.2f}"
@@ -97,6 +179,12 @@ def print_comparison_text_row(
             )
             color1 = GREEN if first_better else RED
             color2 = RED if first_better else GREEN
+
+            global points1, points2
+            if first_better:
+                points1 += 1
+            else:
+                points2 += 1
 
     elif value1 is not None and value2 is not None:
         if value1 == value2:
@@ -114,8 +202,8 @@ def print_comparison_text_row(
     print(f"{label:<22}{text1}{text2}{diff_text:>14}")
 
 def format_stat(key, value):
-    if value is None:
-        return "None"
+    if is_missing(value):
+        return "N/A"
 
     if key in ("apm", "pps", "vs", "glicko", "rd"):
         if isinstance(value, (int, float)):
@@ -152,6 +240,10 @@ def run_comparison(
     user_40l, compare_40l, user_blitz, compare_blitz,
     your_40l_time, their_40l_time,
 ):
+    global points1, points2
+    points1 = 0
+    points2 = 0
+
     import json
     import sys
     from stats import get_40l_time, get_mode_stat, win_rate
@@ -476,7 +568,14 @@ def run_comparison(
             value1 = format_stat(key1, raw1)
             value2 = format_stat(key2, raw2)
 
-            if isinstance(raw1, (int, float)) and isinstance(raw2, (int, float)):
+            if (
+            isinstance(raw1, (int, float))
+            and not isinstance(raw1, bool)
+            and isinstance(raw2, (int, float))
+            and not isinstance(raw2, bool)
+            and not is_missing(raw1)
+            and not is_missing(raw2)
+                ):
                 difference = raw1 - raw2
 
                 decimals = 2 if key1 in ("apm", "pps", "vs", "glicko") else 0
@@ -492,6 +591,10 @@ def run_comparison(
                 elif raw2 > raw1:
                     value1 = f"{RED}{value1}{RESET}"
                     value2 = f"{GREEN}{value2}{RESET}"
+                if raw1 > raw2:
+                    points1 += 1
+                elif raw2 > raw1:
+                    points2 += 1
             else:
                 value1 = f"{value1:>14}"
                 value2 = f"{value2:>14}"
@@ -509,6 +612,9 @@ def run_comparison(
             f"{'Difference':>14}"
         )
         print("-" * 64)
+        
+        print("DEBUG rank:", repr(league.get("rank")), repr(compare_league.get("rank")))
+        print("DEBUG best rank:", repr(league.get("bestrank")), repr(compare_league.get("bestrank")))
 
         league_extra_rows = [
             ("Rank", league.get("rank"), compare_league.get("rank")),
@@ -540,21 +646,23 @@ def run_comparison(
                     compare_league.get("gamesplayed"),
                 ),
             ),
-            ("Current Streak", league.get("streak"), compare_league.get("streak")),
             ("Decaying", league.get("decaying"), compare_league.get("decaying")),
         ]
 
         for label, value1, value2 in league_extra_rows:
-            print_comparison_text_row(
-            label,
-            value1,
-            value2,
-            lower_is_better=label in (
-                "Standing",
-                "Percentile",
-                "Rating Deviation",
-            ),
-        )
+            if label in ("Rank", "Best Rank"):
+                print_rank_comparison_row(label, value1, value2)
+            else:
+                print_comparison_text_row(
+                    label,
+                    value1,
+                    value2,
+                    lower_is_better=label in (
+                        "Standing",
+                        "Percentile",
+                        "Rating Deviation",
+                    ),
+                )
 
 
         # Account comparison
@@ -595,4 +703,11 @@ def run_comparison(
                 )
 
         print("\n" + "-" * 77)
+
+        print("FINAL SCORE")
+        print(f"{username}: {points1}")
+        print(f"{args.compare}: {points2}")
+        print("=" * 40)
+        
+        
         return
