@@ -52,7 +52,25 @@ Install the dependency with:
 ```bash
 python3 -m pip install requests
 ```
+### Additional options
 
+Display available command-line options:
+
+```bash
+python3 main.py --help
+```
+
+Export a player's statistics as JSON:
+
+```bash
+python3 main.py estonian-guy -j
+```
+
+Show version information:
+
+```bash
+python3 main.py --version
+```
 ## Usage
 
 ### View a player's statistics
